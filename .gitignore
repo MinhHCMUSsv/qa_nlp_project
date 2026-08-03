@@ -216,3 +216,27 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ============================================
+# QA NLP Project — Additional ignores
+# ============================================
+
+# Data files (too large for git)
+data/raw/
+data/processed/
+
+# Model weights
+models/
+
+# Qdrant local storage
+data/qdrant_db/
+
+# Node.js (React frontend)
+frontend/node_modules/
+frontend/dist/
+
+# Environment secrets
+.env
+
+# Notebooks checkpoints
+notebooks/.ipynb_checkpoints/

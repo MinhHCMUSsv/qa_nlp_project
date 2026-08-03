@@ -1,0 +1,13 @@
+# Backend Dependencies
+# Install: pip install -r backend/requirements.txt
+
+# Web framework
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# Request handling
+python-multipart>=0.0.9
+pydantic>=2.7.0
+
+# Configuration
+python-dotenv>=1.0.0
