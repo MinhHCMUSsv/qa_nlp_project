@@ -203,7 +203,7 @@ docker-compose up -d
 # The engine will auto-create a local Qdrant instance at ./data/qdrant_db/
 ```
 
-### 4. Install Backend & Engine
+### 4. Install Python Dependencies
 
 ```bash
 python -m venv .venv
@@ -213,8 +213,8 @@ python -m venv .venv
 # macOS/Linux
 source .venv/bin/activate
 
-pip install -r engine/requirements.txt
-pip install -r backend/requirements.txt
+# Install all Python dependencies
+pip install -r requirements.txt
 ```
 
 ### 5. Install Frontend

@@ -30,7 +30,7 @@ class QdrantConfig:
 @dataclass
 class LLMConfig:
     """Configuration for the LLM generator."""
-    model_path: str = os.getenv("LLM_MODEL_PATH", "models/llama-3.2-3b-techqa")
+    model_path: str = os.getenv("LLM_MODEL_PATH", "models/Llama_TechQA")
     model_name: str = os.getenv(
         "LLM_MODEL_NAME", "unsloth/Llama-3.2-3B-Instruct-bnb-4bit"
     )
@@ -59,3 +59,5 @@ class EngineConfig:
 
 # Global config instance
 config = EngineConfig()
+default_config = config
+
