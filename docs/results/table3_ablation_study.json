@@ -1,0 +1,30 @@
+[
+  {
+    "Model Configuration":"Base Model",
+    "EM (%)":0.0,
+    "F1 (%)":15.0,
+    "ROUGE-L (%)":10.6,
+    "BLEU-4 (%)":1.1
+  },
+  {
+    "Model Configuration":"Fine-tuned Model",
+    "EM (%)":0.0,
+    "F1 (%)":22.3,
+    "ROUGE-L (%)":19.0,
+    "BLEU-4 (%)":5.9
+  },
+  {
+    "Model Configuration":"Base Model + RAG",
+    "EM (%)":0.0,
+    "F1 (%)":36.01,
+    "ROUGE-L (%)":29.87,
+    "BLEU-4 (%)":9.32
+  },
+  {
+    "Model Configuration":"Fine-tuned Model + RAG",
+    "EM (%)":0.0,
+    "F1 (%)":49.06,
+    "ROUGE-L (%)":40.06,
+    "BLEU-4 (%)":17.18
+  }
+]

@@ -78,8 +78,9 @@ def test_metrics_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert "dataset" in data
-    assert len(data["metrics"]) == 3
+    assert len(data["metrics"]) == 4
     for m in data["metrics"]:
+
         assert "method" in m
         assert m["rouge_l"] > 0
         assert m["bleu_4"] > 0
