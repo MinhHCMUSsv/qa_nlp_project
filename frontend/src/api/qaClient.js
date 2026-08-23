@@ -1,7 +1,7 @@
 /**
  * API Client — communicates with the FastAPI backend.
  *
- * Base URL: http://localhost:8000/api
+ * Base URL defaults to http://localhost:8000/api
  */
 
 import axios from "axios";
@@ -14,23 +14,56 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 60000, // 60s timeout for LLM inference
+  timeout: 60000, // 60s timeout for LLM / RAG inference
 });
 
 /**
  * Ask a question and get a RAG-powered answer.
- * @param {string} question - The user's question
- * @param {number} topK - Number of documents to retrieve (default: 5)
- * @returns {Promise<{answer: string, sources: Array, question: string}>}
+ * @param {Object} params
+ * @param {string} params.question - The user's question
+ * @param {number} [params.topK=5] - Number of documents to retrieve
+ * @param {number} [params.temperature=0.7] - LLM temperature
+ * @param {string} [params.retrievalMode="dense"] - "dense" | "hybrid" | "direct_llm"
+ * @param {string} [params.sessionId] - Session ID
+ * @returns {Promise<{
+ *   question: string,
+ *   answer: string,
+ *   sources: Array,
+ *   latency_ms: number,
+ *   retrieval_mode: string,
+ *   model_name: string,
+ *   confidence_score: number
+ * }>}
  */
-export async function askQuestion(question, topK = 5) {
-  const response = await apiClient.post("/ask", { question, top_k: topK });
+export async function askQuestion({
+  question,
+  topK = 5,
+  temperature = 0.7,
+  retrievalMode = "dense",
+  sessionId = null,
+}) {
+  const response = await apiClient.post("/ask", {
+    question,
+    top_k: topK,
+    temperature,
+    retrieval_mode: retrievalMode,
+    session_id: sessionId,
+  });
   return response.data;
 }
 
 /**
- * Check system health status.
- * @returns {Promise<{status: string, qdrant_connected: boolean, model_loaded: boolean}>}
+ * Check backend system health status.
+ * @returns {Promise<{
+ *   status: string,
+ *   qdrant_connected: boolean,
+ *   model_loaded: boolean,
+ *   embedder_loaded: boolean,
+ *   engine_mode: string,
+ *   indexed_documents_count: number,
+ *   device: string,
+ *   version: string
+ * }>}
  */
 export async function checkHealth() {
   const response = await apiClient.get("/health");
@@ -39,19 +72,63 @@ export async function checkHealth() {
 
 /**
  * Trigger document indexing.
- * @returns {Promise<Object>}
+ * @param {string} [corpusSplit="techqa_all"]
+ * @param {boolean} [forceReindex=false]
+ * @returns {Promise<{
+ *   status: string,
+ *   indexed_count: number,
+ *   collection_name: string,
+ *   duration_seconds: number
+ * }>}
  */
-export async function indexDocuments() {
-  const response = await apiClient.post("/index");
+export async function indexDocuments(corpusSplit = "techqa_all", forceReindex = false) {
+  const response = await apiClient.post("/index", {
+    corpus_split: corpusSplit,
+    force_reindex: forceReindex,
+  });
   return response.data;
 }
 
 /**
  * Get Qdrant collection statistics.
- * @returns {Promise<Object>}
+ * @returns {Promise<{
+ *   collection_name: string,
+ *   points_count: number,
+ *   vector_size: number,
+ *   distance_metric: string,
+ *   status: string
+ * }>}
  */
 export async function getCollections() {
   const response = await apiClient.get("/collections");
+  return response.data;
+}
+
+/**
+ * Get sample TechQA questions.
+ * @returns {Promise<Array<{
+ *   id: string,
+ *   category: string,
+ *   question: string,
+ *   description: string
+ * }>>}
+ */
+export async function getSampleQuestions() {
+  const response = await apiClient.get("/sample-questions");
+  return response.data;
+}
+
+/**
+ * Get benchmark evaluation metrics for model comparison.
+ * @returns {Promise<{
+ *   dataset: string,
+ *   test_samples_count: number,
+ *   metrics: Array<Object>,
+ *   conclusion: string
+ * }>}
+ */
+export async function getEvaluationMetrics() {
+  const response = await apiClient.get("/metrics");
   return response.data;
 }
 
