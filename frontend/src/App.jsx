@@ -1,122 +1,107 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState } from "react";
+import "./App.css";
+import Header from "./components/Header";
+import Sidebar from "./components/Sidebar";
+import ChatWindow from "./components/ChatWindow";
+import ChatInput from "./components/ChatInput";
+import DocumentInspector from "./components/DocumentInspector";
+import MetricsModal from "./components/MetricsModal";
+import useChat from "./hooks/useChat";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const {
+    messages,
+    isLoading,
+    activeSourceDoc,
+    setActiveSourceDoc,
+    ragSettings,
+    updateSettings,
+    healthStatus,
+    sampleQuestions,
+    showMetricsModal,
+    setShowMetricsModal,
+    metricsData,
+    metricsLoading,
+    openMetrics,
+    sendMessage,
+    clearChat,
+  } = useChat();
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isInspectorOpen, setIsInspectorOpen] = useState(true);
+
+  const handleSelectSample = (questionText) => {
+    sendMessage(questionText);
+  };
+
+  const handleSelectSource = (sourceDoc) => {
+    setActiveSourceDoc(sourceDoc);
+    setIsInspectorOpen(true);
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app-root">
+      {/* 1. Header Bar */}
+      <Header
+        healthStatus={healthStatus}
+        onOpenMetrics={openMetrics}
+        onClearChat={clearChat}
+        messageCount={messages.length}
+      />
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {/* 2. Main Dashboard Layout */}
+      <main className="app-main-layout">
+        {/* Left Sidebar: Controls & Sample Questions */}
+        <div className={`layout-sidebar ${isSidebarOpen ? "open" : "collapsed"}`}>
+          <Sidebar
+            ragSettings={ragSettings}
+            onUpdateSettings={updateSettings}
+            healthStatus={healthStatus}
+            sampleQuestions={sampleQuestions}
+            onSelectSampleQuestion={handleSelectSample}
+            isLoading={isLoading}
+          />
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {/* Center Panel: Chat Conversation & Input */}
+        <section className="layout-chat-panel">
+          <ChatWindow
+            messages={messages}
+            isLoading={isLoading}
+            onSelectSource={handleSelectSource}
+            onSelectSampleQuestion={handleSelectSample}
+            sampleQuestions={sampleQuestions}
+          />
+
+          <div className="chat-input-sticky">
+            <ChatInput
+              onSendMessage={sendMessage}
+              isLoading={isLoading}
+              isOnline={healthStatus.isConnected}
+            />
+          </div>
+        </section>
+
+        {/* Right Panel: Document Inspector (Technote Viewer) */}
+        {isInspectorOpen && activeSourceDoc && (
+          <aside className="layout-inspector-panel">
+            <DocumentInspector
+              document={activeSourceDoc}
+              onClose={() => setIsInspectorOpen(false)}
+            />
+          </aside>
+        )}
+      </main>
+
+      {/* 3. Evaluation & Benchmark Modal */}
+      <MetricsModal
+        isOpen={showMetricsModal}
+        onClose={() => setShowMetricsModal(false)}
+        metricsData={metricsData}
+        isLoading={metricsLoading}
+      />
+    </div>
+  );
 }
 
-export default App
+export default App;
