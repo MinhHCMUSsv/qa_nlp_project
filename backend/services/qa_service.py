@@ -289,6 +289,21 @@ class QAService:
         mode: str = "dense",
     ) -> str:
         """Synthesize technical answer based on retrieved documents and question."""
+        # 0. Check for greetings or non-technical chit-chat
+        q_lower = question.strip().lower()
+        if re.match(r"^(hi|hello|hey|alo|xin ch[aà]o|ch[aà]o|greetings|help|who are you|b[aạ]n l[aà] ai)\b", q_lower) and len(q_lower.split()) <= 4:
+            return (
+                "### 👋 Xin chào! Tôi là Trợ lý Kỹ thuật AI TechQA\n\n"
+                "Tôi được kết nối với **Cơ sở Tri thức IBM TechQA (69,888 tài liệu)** và mô hình ngôn ngữ **`AQUABOT/Llama-3.2-3B-TechQA`** "
+                "để hỗ trợ bạn tra cứu, chẩn đoán và khắc phục sự cố kỹ thuật chuyên sâu.\n\n"
+                "#### 💡 Bạn có thể hỏi tôi về các chủ đề như:\n"
+                "- 🌐 **WebSphere Application Server**: Lỗi JVM Heap, OutOfMemoryError, Garbage Collection.\n"
+                "- 🗄️ **DB2 Database**: Xung đột khóa (Lock timeout SQL0911N), deadlock, tối ưu hóa truy vấn.\n"
+                "- 📬 **IBM MQ**: Tràn hàng đợi (Queue Full 2053), cấu hình kênh kết nối channel.\n"
+                "- 🔐 **Bảo mật & SSL/TLS**: Lỗi chứng chỉ PKIX, Java Keystore, SSLHandshakeException.\n\n"
+                "> 👉 *Mẹo: Bạn có thể chọn nhanh các câu hỏi mẫu ở thanh bên trái hoặc nhập mã lỗi cụ thể để nhận phương án xử lý chuẩn xác nhất!*"
+            )
+
         if mode == "direct_llm" or not sources:
             if self._engine_pipeline and hasattr(self._engine_pipeline, "generator"):
                 try:
@@ -298,6 +313,7 @@ class QAService:
                 except Exception:
                     pass
             return (
+
                 f"### Direct LLM Answer (No RAG Context)\n\n"
                 f"Based on general training knowledge regarding: **{question}**\n\n"
                 f"1. **Analysis**: This issue typically relates to runtime memory constraints, connection configuration, or timeouts.\n"
@@ -334,6 +350,9 @@ class QAService:
             line_str = line.strip()
             if not line_str:
                 continue
+            # Filter out boilerplate web navigation text
+            if line_str.lower() in ["back to top", "top", "contents", "table of contents", "ibm copyright"]:
+                continue
             if line_str.startswith("Symptoms:") or line_str.startswith("Root Cause:"):
                 formatted_steps.append(f"**{line_str}**\n")
             elif line_str.startswith("Resolution Steps:"):
@@ -347,7 +366,13 @@ class QAService:
             else:
                 formatted_steps.append(line_str)
 
-        answer_parts.append("\n".join(formatted_steps))
+        if not formatted_steps or len("\n".join(formatted_steps).strip()) < 15:
+            answer_parts.append(
+                f"Tài liệu Technote trên cung cấp thông tin liên quan đến từ khóa của bạn. "
+                f"Vui lòng mô tả chi tiết hơn về sản phẩm (ví dụ: WebSphere, DB2, MQ) hoặc mã lỗi cụ thể để nhận hướng dẫn khắc phục từng bước."
+            )
+        else:
+            answer_parts.append("\n".join(formatted_steps))
 
         if len(sources) > 1:
             answer_parts.append("\n\n#### 📚 Supporting References:")
