@@ -393,10 +393,11 @@ class QAService:
             sources=sources,
             latency_ms=round(latency_ms, 2),
             retrieval_mode=retrieval_mode,
-            model_name="Llama-3.2-3B-Instruct (Fine-tuned TechQA)",
+            model_name="AQUABOT/Llama-3.2-3B-TechQA",
             confidence_score=round(confidence, 2),
             session_id=session_id,
         )
+
 
     def get_health(self) -> HealthResponse:
         """Return system and model health status."""
