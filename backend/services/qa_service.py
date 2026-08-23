@@ -219,10 +219,41 @@ class QAService:
     def retrieve_documents(
         self, question: str, top_k: int = 5, mode: str = "dense"
     ) -> List[SourceDocument]:
-        """Retrieve most relevant technotes from the corpus."""
+        """Retrieve most relevant technotes from Qdrant Cloud or local corpus."""
         if mode == "direct_llm":
             return []
 
+        # 1. Try real live Qdrant retrieval first
+        if self._engine_pipeline is not None:
+            try:
+                raw_results = self._engine_pipeline.retrieve(question, top_k=top_k)
+                if raw_results:
+                    results = []
+                    for r in raw_results:
+                        payload = r.get("payload", {})
+                        content = r.get("content") or payload.get("page_content") or payload.get("text") or ""
+                        title = r.get("title") or payload.get("title") or f"IBM Technote #{r.get('id')}"
+                        doc_id = str(r.get("doc_id") or payload.get("id") or f"DOC-{r.get('id')}")
+                        results.append(
+                            SourceDocument(
+                                doc_id=doc_id,
+                                title=title,
+                                content=content,
+                                score=r.get("score", 0.85),
+                                category=payload.get("category", "IBM Technote"),
+                                url=payload.get("url"),
+                                metadata={
+                                    "qdrant_id": r.get("id"),
+                                    "relevance_score": r.get("score"),
+                                    "retrieval_mode": mode,
+                                },
+                            )
+                        )
+                    return results
+            except Exception as e:
+                logger.warning(f"Live Qdrant retrieval encountered error ({e}), falling back to local corpus.")
+
+        # 2. Fallback to local scored corpus
         scored_docs = []
         for doc in self._corpus:
             score = self._compute_relevance(question, doc)
@@ -259,6 +290,13 @@ class QAService:
     ) -> str:
         """Synthesize technical answer based on retrieved documents and question."""
         if mode == "direct_llm" or not sources:
+            if self._engine_pipeline and hasattr(self._engine_pipeline, "generator"):
+                try:
+                    return self._engine_pipeline.generator.generate(
+                        prompt=question, context=None, temperature=temperature
+                    )
+                except Exception:
+                    pass
             return (
                 f"### Direct LLM Answer (No RAG Context)\n\n"
                 f"Based on general training knowledge regarding: **{question}**\n\n"
@@ -270,14 +308,26 @@ class QAService:
                 f"> 💡 *Tip: Switch to **Dense Vector Search (bge-m3)** in the sidebar to enable grounding with IBM TechQA verified technotes.*"
             )
 
+        # If live LLM generator is available, use real Llama generation
+        if self._engine_pipeline and hasattr(self._engine_pipeline, "generator"):
+            try:
+                context = "\n\n".join([f"[{s.doc_id}] {s.title}:\n{s.content}" for s in sources])
+                ans = self._engine_pipeline.generator.generate(
+                    prompt=question, context=context, temperature=temperature
+                )
+                if ans and len(ans.strip()) > 10:
+                    return ans
+            except Exception:
+                pass
+
+        # Dynamic synthesis based on actual retrieved source content
         top_doc = sources[0]
-        # Build comprehensive grounded technical response
         answer_parts = [
             f"### 📋 Technical Resolution Summary\n",
             f"Based on verified IBM Technote **[{top_doc.doc_id}: {top_doc.title}]** (Relevance: {top_doc.score * 100:.1f}%):\n",
         ]
 
-        # Extract structured content from top source
+        # Extract structured content from actual retrieved top source
         content_lines = top_doc.content.split("\n")
         formatted_steps = []
         for line in content_lines:
@@ -292,7 +342,7 @@ class QAService:
                 formatted_steps.append(f"- {line_str}")
             elif line_str.startswith("-"):
                 formatted_steps.append(f"  {line_str}")
-            elif line_str.startswith("'") or line_str.startswith("db2") or line_str.startswith("keytool"):
+            elif line_str.startswith("'") or line_str.startswith("db2") or line_str.startswith("keytool") or line_str.startswith("sudo"):
                 formatted_steps.append(f"```bash\n{line_str.strip('`')}\n```")
             else:
                 formatted_steps.append(line_str)
@@ -307,6 +357,7 @@ class QAService:
                 )
 
         return "\n".join(answer_parts)
+
 
     def answer(
         self,
