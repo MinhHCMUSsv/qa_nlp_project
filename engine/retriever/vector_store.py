@@ -33,6 +33,18 @@ class QdrantVectorStore:
             self.client = client
         elif in_memory:
             self.client = QdrantClient(":memory:")
+        elif self.config.url:
+            try:
+                self.client = QdrantClient(
+                    url=self.config.url,
+                    api_key=self.config.api_key,
+                    timeout=10.0,
+                )
+                self.client.get_collections()
+                logger.info(f"Connected to Qdrant Cloud at {self.config.url}")
+            except Exception as e:
+                logger.warning(f"Could not connect to Qdrant Cloud ({e}). Using in-memory Qdrant client fallback.")
+                self.client = QdrantClient(":memory:")
         else:
             try:
                 self.client = QdrantClient(host=self.config.host, port=self.config.port, timeout=3.0)
@@ -42,6 +54,7 @@ class QdrantVectorStore:
             except Exception as e:
                 logger.warning(f"Could not connect to Qdrant service ({e}). Using in-memory Qdrant client fallback.")
                 self.client = QdrantClient(":memory:")
+
 
     def create_collection(
         self,

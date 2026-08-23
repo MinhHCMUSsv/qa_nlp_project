@@ -4,9 +4,11 @@ Engine configuration — centralized settings for all AI components.
 
 import os
 from dataclasses import dataclass, field
+from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv()
+
 
 
 @dataclass
@@ -23,8 +25,11 @@ class QdrantConfig:
     """Configuration for the Qdrant vector store."""
     host: str = os.getenv("QDRANT_HOST", "localhost")
     port: int = int(os.getenv("QDRANT_PORT", "6333"))
-    collection_name: str = os.getenv("QDRANT_COLLECTION_NAME", "techqa_documents")
+    url: Optional[str] = os.getenv("QDRANT_URL", None)
+    api_key: Optional[str] = os.getenv("QDRANT_API_KEY", None)
+    collection_name: str = os.getenv("QDRANT_COLLECTION_NAME", "techqa_corpus")
     vector_size: int = 1024  # bge-m3 dense vector dimension
+
 
 
 @dataclass
