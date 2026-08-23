@@ -12,7 +12,7 @@ export default function MetricsModal({ isOpen, onClose, metricsData, isLoading }
             <div>
               <h3 className="modal-serif-heading">TechQA Benchmark & Ablation Study</h3>
               <p className="modal-caption-text">
-                Table 3: QA Performance Across 160 Unseen IBM Dev Pairs (Ground Truth Verified)
+                Ablation Study: QA Performance Across 160 Unseen IBM Dev Pairs (Ground Truth Verified)
               </p>
             </div>
           </div>
@@ -80,8 +80,9 @@ export default function MetricsModal({ isOpen, onClose, metricsData, isLoading }
               <div className="feature-card-conclusion">
                 <div className="conclusion-top-row">
                   <span className="text-teal">✦</span>
-                  <h4 className="conclusion-serif-title">Key Scientific Findings (Table 3 Analysis)</h4>
+                  <h4 className="conclusion-serif-title">Key Scientific Findings & Architecture Insights</h4>
                 </div>
+
                 <p className="conclusion-body-text">
                   QLoRA fine-tuning aligns the model's vocabulary and syntax with official IBM Technotes (+48.7% F1 gain). Integrating Qdrant Cloud dense vector retrieval (69,888 technotes) with the fine-tuned generator propels F1-score to <strong>49.06%</strong> and BLEU-4 to <strong>17.18%</strong> (15.6x baseline), proving the combined synergy of domain adaptation and retrieval grounding.
                 </p>
