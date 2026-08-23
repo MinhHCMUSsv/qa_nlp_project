@@ -16,11 +16,12 @@ Usage:
 
 import os
 import logging
-from typing import Optional, Generator
+from typing import Optional, Generator, Union
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 import torch
 
-from engine.config import EngineConfig, default_config
+
+from engine.config import EngineConfig, LLMConfig, default_config
 
 logger = logging.getLogger(__name__)
 
@@ -43,22 +44,29 @@ class LlamaGenerator:
 
     def __init__(
         self,
-        config: Optional[EngineConfig] = None,
+        config: Optional[Union[EngineConfig, LLMConfig]] = None,
         model_name_or_path: Optional[str] = None,
         device: Optional[str] = None,
-        lazy_load: bool = False,
+        lazy_load: bool = True,
     ):
         """
         Initialize the generator.
 
         Args:
-            config: Master EngineConfig instance (defaults to global config).
+            config: Master EngineConfig or LLMConfig instance.
             model_name_or_path: Override model path or HuggingFace repo ID.
             device: Override compute device ('cuda', 'cpu', 'mps').
             lazy_load: If True, defer model weights loading until first generate() call.
         """
         self.config = config or default_config
-        self.device = device or self.config.llm.device
+        if isinstance(self.config, LLMConfig):
+            self.llm_config = self.config
+        elif hasattr(self.config, "llm"):
+            self.llm_config = self.config.llm
+        else:
+            self.llm_config = default_config.llm
+
+        self.device = device or self.llm_config.device
         if self.device == "cuda" and not torch.cuda.is_available():
             self.device = "cpu"
 
@@ -83,15 +91,16 @@ class LlamaGenerator:
             return override_source, is_local
 
         # 1. Check if local model directory exists
-        local_path = self.config.llm.model_path
+        local_path = self.llm_config.model_path
         if local_path and os.path.exists(local_path) and os.path.isdir(local_path):
             logger.info(f"Using local model weights: {local_path}")
             return local_path, True
 
         # 2. Fallback to Hugging Face Hub
-        hf_repo = self.config.llm.model_name
+        hf_repo = self.llm_config.model_name
         logger.info(f"Local model not found. Using Hugging Face Hub model: {hf_repo}")
         return hf_repo, False
+
 
     def _load_model(self):
         """Load tokenizer and model weights into memory/VRAM."""
