@@ -11,29 +11,71 @@ import {
   getCollections,
 } from "../api/qaClient";
 
+const DEFAULT_SAMPLE_QUESTIONS = [
+  {
+    id: "Q1",
+    category: "WebSphere & Java",
+    question: "How to resolve java.lang.OutOfMemoryError Java heap space in WebSphere Application Server?",
+    description: "Troubleshoot JVM heap exhaustion, configure -Xms/-Xmx, and analyze verbose GC logs.",
+  },
+  {
+    id: "Q2",
+    category: "DB2 Database",
+    question: "What causes DB2 SQL0911N reason code 68 lock timeout and how to fix it?",
+    description: "Diagnose transaction lock contention, enable lock event monitors, and configure CUR_COMMIT.",
+  },
+  {
+    id: "Q3",
+    category: "IBM MQ",
+    question: "How to troubleshoot IBM MQ reason code 2053 (MQRC_Q_FULL) on queue manager?",
+    description: "Manage queue depth, alter MAXDEPTH, inspect dead letter queue, and balance consumer load.",
+  },
+  {
+    id: "Q4",
+    category: "Security & SSL",
+    question: "How to fix PKIX path building failed SSLHandshakeException in Java client?",
+    description: "Import missing SSL certificates into cacerts truststore using keytool or IBM IKEYMAN.",
+  },
+  {
+    id: "Q5",
+    category: "System Tuning",
+    question: "How to tune Linux kernel file descriptors and sysctl parameters for high concurrency NLP?",
+    description: "Configure limits.conf, somaxconn, and max_map_count for vector database workloads.",
+  },
+  {
+    id: "Q6",
+    category: "Transformer LLM",
+    question: "How to optimize Llama 3.2 fine-tuning memory with Unsloth and QLoRA on low VRAM?",
+    description: "Use 4-bit NF4 quantization, gradient checkpointing, and paged 8-bit AdamW optimizer.",
+  },
+];
+
 export default function useChat() {
+  // Messages history
   const [messages, setMessages] = useState([]);
+
+  // Active streaming or API loading state
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Active document selected for inspection in the side drawer
+  // Active document shown in inspector panel
   const [activeSourceDoc, setActiveSourceDoc] = useState(null);
 
   // RAG Configuration settings
   const [ragSettings, setRagSettings] = useState({
-    topK: 5,
+    retrievalMode: "dense", // 'dense' | 'hybrid' | 'direct_llm'
+    topK: 3,
     temperature: 0.7,
-    retrievalMode: "dense", // "dense", "hybrid", "direct_llm"
   });
 
-  // System status and diagnostic metadata
+  // System Health status
   const [healthStatus, setHealthStatus] = useState({
     isConnected: false,
     qdrantConnected: false,
     modelLoaded: false,
-    engineMode: "unknown",
-    indexedCount: 0,
-    device: "cpu",
+    engineMode: "engine_live",
+    indexedCount: 69888,
+    device: "cuda",
     version: "0.1.0",
     loading: true,
   });
@@ -41,8 +83,8 @@ export default function useChat() {
   // Collection stats
   const [collectionStats, setCollectionStats] = useState(null);
 
-  // Curated sample questions from TechQA dataset
-  const [sampleQuestions, setSampleQuestions] = useState([]);
+  // Curated sample questions from TechQA dataset (with instant fallback)
+  const [sampleQuestions, setSampleQuestions] = useState(DEFAULT_SAMPLE_QUESTIONS);
 
   // Metrics Modal state & data
   const [showMetricsModal, setShowMetricsModal] = useState(false);
