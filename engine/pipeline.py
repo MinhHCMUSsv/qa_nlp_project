@@ -72,14 +72,13 @@ class RAGPipeline:
             if sources:
                 context_blocks = []
                 for i, doc in enumerate(sources):
-                    title = doc.get("title", "IBM Technote")
-                    doc_id = doc.get("doc_id", f"DOC-{i+1}")
                     content = doc.get("content", "").strip()
-                    context_blocks.append(f"[{doc_id}] {title}:\n{content}")
+                    if content:
+                        context_blocks.append(content)
                 context = "\n\n".join(context_blocks)
 
         answer_text = self.generator.generate(
-            prompt=question,
+            question=question,
             context=context if use_rag else None,
             max_new_tokens=max_new_tokens,
             temperature=temperature,

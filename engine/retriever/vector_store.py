@@ -146,14 +146,26 @@ class QdrantVectorStore:
 
         formatted = []
         for r in results:
+            payload = r.payload or {}
+            metadata = payload.get("metadata", {})
+            
+            # Extract content (support both flat and LangChain structure)
+            content = payload.get("content") or payload.get("text") or payload.get("page_content") or ""
+            
+            # Extract title
+            title = payload.get("title") or metadata.get("title") or "IBM Technote"
+            
+            # Extract doc_id
+            doc_id = payload.get("doc_id") or metadata.get("id") or metadata.get("source_id") or str(r.id)
+
             formatted.append({
                 "id": r.id,
                 "score": round(float(r.score), 4),
-                "payload": r.payload or {},
-                "title": r.payload.get("title", "IBM Technote") if r.payload else "IBM Technote",
-                "content": r.payload.get("content") or r.payload.get("text", "") if r.payload else "",
-                "doc_id": r.payload.get("doc_id", str(r.id)) if r.payload else str(r.id),
-                "url": r.payload.get("url") if r.payload else None,
+                "payload": payload,
+                "title": title,
+                "content": content,
+                "doc_id": doc_id,
+                "url": payload.get("url") or metadata.get("url"),
             })
         return formatted
 

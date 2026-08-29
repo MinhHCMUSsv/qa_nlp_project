@@ -37,7 +37,7 @@ def test_qdrant_cloud_query():
     print("3. Loading vector store from Cloud...")
     qdrant = QdrantVectorStore(
         client=client,
-        collection_name="techqa_corpus",
+        collection_name="techqa_corpus_bge_m3_section_clean",
         embedding=embeddings
     )
     

@@ -14,7 +14,7 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 60000, // 60s timeout for LLM / RAG inference
+  timeout: 300000, // 300s timeout for LLM / RAG inference (increased for model loading)
 });
 
 /**

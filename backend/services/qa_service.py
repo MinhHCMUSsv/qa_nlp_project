@@ -308,9 +308,10 @@ class QAService:
             if self._engine_pipeline and hasattr(self._engine_pipeline, "generator"):
                 try:
                     return self._engine_pipeline.generator.generate(
-                        prompt=question, context=None, temperature=temperature
+                        question=question, context=None, temperature=temperature
                     )
-                except Exception:
+                except Exception as e:
+                    logger.error(f"LLM Generation failed during Direct LLM answer: {e}", exc_info=True)
                     pass
             return (
 
@@ -329,11 +330,12 @@ class QAService:
             try:
                 context = "\n\n".join([f"[{s.doc_id}] {s.title}:\n{s.content}" for s in sources])
                 ans = self._engine_pipeline.generator.generate(
-                    prompt=question, context=context, temperature=temperature
+                    question=question, context=context, temperature=temperature
                 )
                 if ans and len(ans.strip()) > 10:
                     return ans
-            except Exception:
+            except Exception as e:
+                logger.error(f"LLM Generation failed during RAG answer: {e}", exc_info=True)
                 pass
 
         # Dynamic synthesis based on actual retrieved source content
@@ -353,15 +355,18 @@ class QAService:
             # Filter out boilerplate web navigation text
             if line_str.lower() in ["back to top", "top", "contents", "table of contents", "ibm copyright"]:
                 continue
-            if line_str.startswith("Symptoms:") or line_str.startswith("Root Cause:"):
+            
+            # Format custom section headers
+            if line_str.startswith("APAR ID:") or line_str.startswith("Title:") or line_str.startswith("Section:"):
                 formatted_steps.append(f"**{line_str}**\n")
-            elif line_str.startswith("Resolution Steps:"):
-                formatted_steps.append(f"\n#### 🛠️ Recommended Troubleshooting Steps:\n")
+            # Format markdown bullet points
+            elif line_str.startswith("* ") or line_str.startswith("- "):
+                formatted_steps.append(f"- {line_str[2:]}")
+            # Format numbered lists
             elif re.match(r"^\d+\.", line_str):
-                formatted_steps.append(f"- {line_str}")
-            elif line_str.startswith("-"):
-                formatted_steps.append(f"  {line_str}")
-            elif line_str.startswith("'") or line_str.startswith("db2") or line_str.startswith("keytool") or line_str.startswith("sudo"):
+                formatted_steps.append(f"{line_str}")
+            # Simple bash commands wrapper (only if wrapped in quotes or backticks)
+            elif line_str.startswith("`") and line_str.endswith("`"):
                 formatted_steps.append(f"```bash\n{line_str.strip('`')}\n```")
             else:
                 formatted_steps.append(line_str)
@@ -439,12 +444,23 @@ class QAService:
 
     def get_collection_stats(self) -> CollectionStats:
         """Return Qdrant collection statistics."""
+        if self._engine_pipeline and self._engine_pipeline.vector_store:
+            info = self._engine_pipeline.vector_store.get_collection_info()
+            return CollectionStats(
+                collection_name=info.get("collection_name", "techqa_corpus"),
+                points_count=info.get("points_count", 0),
+                vector_size=1024,
+                distance_metric="Cosine",
+                status=str(info.get("status", "ready")),
+            )
+            
+        # Trả về fake data nếu không có kết nối thật
         return CollectionStats(
-            collection_name="techqa_documents",
+            collection_name="techqa_documents_fallback",
             points_count=self._indexed_count,
             vector_size=1024,  # bge-m3 dimension
             distance_metric="Cosine",
-            status="ready",
+            status="fallback_mock_data",
         )
 
     def index_documents(
