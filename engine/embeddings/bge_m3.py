@@ -98,3 +98,7 @@ class BGEM3Embedder:
         """Encode a single query string into a vector."""
         res = self.encode([query])
         return res[0] if res else []
+
+    embed_query = encode_query
+    embed_documents = encode
+

@@ -5,6 +5,7 @@ Manages collection lifecycle, indexing, and vector similarity search.
 Supports both remote Qdrant service (Docker / cloud) and local in-memory/disk store.
 """
 
+import os
 import logging
 from typing import Any, Dict, List, Optional, Union
 from qdrant_client import QdrantClient
@@ -38,8 +39,9 @@ class QdrantVectorStore:
                 self.client = QdrantClient(
                     url=self.config.url,
                     api_key=self.config.api_key,
-                    timeout=10.0,
+                    timeout=float(os.getenv("QDRANT_TIMEOUT", "60.0")),
                 )
+
                 self.client.get_collections()
                 logger.info(f"Connected to Qdrant Cloud at {self.config.url}")
             except Exception as e:

@@ -205,9 +205,11 @@ class LlamaGenerator:
         elif hasattr(inputs, "to"):
             inputs = inputs.to(self.device)
 
-        gen_tokens = max_new_tokens or self.config.llm.max_new_tokens
-        gen_temp = temperature if temperature is not None else self.config.llm.temperature
-        gen_top_p = top_p if top_p is not None else self.config.llm.top_p
+        llm_cfg = self.config.llm if hasattr(self.config, "llm") else (self.config if hasattr(self.config, "max_new_tokens") else self.llm_config)
+        gen_tokens = max_new_tokens or getattr(llm_cfg, "max_new_tokens", 256) or self.llm_config.max_new_tokens
+        gen_temp = temperature if temperature is not None else getattr(llm_cfg, "temperature", 0.7)
+        gen_top_p = top_p if top_p is not None else getattr(llm_cfg, "top_p", 0.9)
+
 
         with torch.no_grad():
             outputs = self._model.generate(
