@@ -14,11 +14,11 @@ load_dotenv()
 # ==========================================
 QDRANT_CLOUD_URL = os.getenv(
     "QDRANT_URL",
-    "https://f3636289-cb7b-42b1-ab07-b17b6ef9c217.sa-east-1-0.aws.cloud.qdrant.io"
+    ""
 )
 QDRANT_CLOUD_API_KEY = os.getenv(
     "QDRANT_API_KEY",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIiwic3ViamVjdCI6ImFwaS1rZXk6NGJkZjVlMWYtYTk0NS00MmZjLWI4MGUtOWMyYTk0ZDQ2NTBlIn0.t2AGHYbrZ8Ddb-eYNwzxygYywaYD8W9vDtm-YBHzOcM"
+    ""
 )
 
 def test_qdrant_cloud_query():
