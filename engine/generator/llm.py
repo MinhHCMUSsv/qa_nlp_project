@@ -210,6 +210,12 @@ class LlamaGenerator:
         gen_temp = temperature if temperature is not None else getattr(llm_cfg, "temperature", 0.7)
         gen_top_p = top_p if top_p is not None else getattr(llm_cfg, "top_p", 0.9)
 
+        # Stop tokens: include standard EOS and Llama 3 EOT (<|eot_id|>)
+        eos_ids = [self._tokenizer.eos_token_id]
+        if hasattr(self._tokenizer, "convert_tokens_to_ids"):
+            eot_id = self._tokenizer.convert_tokens_to_ids("<|eot_id|>")
+            if isinstance(eot_id, int) and eot_id > 0 and eot_id != self._tokenizer.unk_token_id:
+                eos_ids.append(eot_id)
 
         with torch.no_grad():
             outputs = self._model.generate(
@@ -218,7 +224,9 @@ class LlamaGenerator:
                 temperature=gen_temp,
                 top_p=gen_top_p,
                 do_sample=gen_temp > 0,
+                repetition_penalty=1.15,
                 pad_token_id=self._tokenizer.eos_token_id,
+                eos_token_id=eos_ids if len(eos_ids) > 1 else self._tokenizer.eos_token_id,
             )
 
         input_len = inputs["input_ids"].shape[1]
