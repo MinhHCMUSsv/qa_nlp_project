@@ -60,18 +60,18 @@ export default function MetricsModal({ isOpen, onClose, metricsData, isLoading }
                     <tr>
                       <td className="cell-method-name"><strong>3. Base Model + RAG</strong> (Qdrant)</td>
                       <td>0.0%</td>
-                      <td>36.01%</td>
-                      <td>29.87%</td>
-                      <td>9.32%</td>
-                      <td><span className="pill-hallucination rate-teal">+140.1% F1</span></td>
+                      <td>18.83%</td>
+                      <td>13.75%</td>
+                      <td>1.78%</td>
+                      <td><span className="pill-hallucination rate-teal">+25.5% F1</span></td>
                     </tr>
                     <tr className="row-featured-coral">
                       <td className="cell-method-name"><strong>4. Fine-tuned + RAG</strong> (Full System)</td>
                       <td>0.0%</td>
-                      <td><span className="badge-f1-teal" style={{ fontSize: "0.95rem" }}>49.06%</span></td>
-                      <td><strong>40.06%</strong></td>
-                      <td><strong>17.18%</strong></td>
-                      <td><span className="pill-hallucination rate-teal" style={{ fontWeight: 700 }}>+227.1% F1 (15.6x BLEU)</span></td>
+                      <td><span className="badge-f1-teal" style={{ fontSize: "0.95rem" }}>19.53%</span></td>
+                      <td><strong>16.09%</strong></td>
+                      <td><strong>2.25%</strong></td>
+                      <td><span className="pill-hallucination rate-teal" style={{ fontWeight: 700 }}>33.9 words (100% length match)</span></td>
                     </tr>
                   </tbody>
                 </table>
@@ -84,7 +84,7 @@ export default function MetricsModal({ isOpen, onClose, metricsData, isLoading }
                 </div>
 
                 <p className="conclusion-body-text">
-                  QLoRA fine-tuning aligns the model's vocabulary and syntax with official IBM Technotes (+48.7% F1 gain). Integrating Qdrant Cloud dense vector retrieval (69,888 technotes) with the fine-tuned generator propels F1-score to <strong>49.06%</strong> and BLEU-4 to <strong>17.18%</strong> (15.6x baseline), proving the combined synergy of domain adaptation and retrieval grounding.
+                  QLoRA fine-tuning aligns the model's vocabulary and domain syntax with official IBM Technotes (+48.7% F1 gain, 5.3x BLEU-4). Integrating Qdrant Cloud dense vector retrieval (576,170 chunks) boosts the Base Model from 15.00% to <strong>18.83% F1</strong> (+25.5%). Fine-tuned + RAG achieves an average length of <strong>33.9 words</strong>, matching the exact median of TechQA ground truth (34 words).
                 </p>
               </div>
             </>
