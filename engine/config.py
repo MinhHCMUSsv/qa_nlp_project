@@ -37,7 +37,7 @@ class LLMConfig:
     """Configuration for the LLM generator."""
     model_path: str = os.getenv("LLM_MODEL_PATH", "models/Llama_TechQA")
     model_name: str = os.getenv(
-        "LLM_MODEL_NAME", "unsloth/Llama-3.2-3B-Instruct-bnb-4bit"
+        "LLM_MODEL_NAME", "AQUABOT/Llama-3.2-3B-TechQA"
     )
     device: str = os.getenv("DEVICE", "cuda")
     max_new_tokens: int = 512
