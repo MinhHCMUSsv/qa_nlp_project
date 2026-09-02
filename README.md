@@ -34,7 +34,6 @@
 - [Usage & Web Application](#-usage--web-application)
 - [Training & Notebooks](#-training--notebooks)
 - [Evaluation Results](#-evaluation-results)
-- [Team Contributions](#-team-contributions)
 - [References](#-references)
 - [License](#-license)
 
@@ -286,15 +285,7 @@ Evaluated on the official held-out benchmark of **160 answerable TechQA question
 3. **Response Length Alignment**: Constrained decoding and extractive fine-tuning reduce average answer length from 80.0 words down to **33.9 words**, matching the 34-word median length of human ground-truth answers (99.7% alignment).
 4. **Distractor Context Degradation**: Detailed retrieval analysis reveals that `Answer-in-Context@1` is **29.4%** (rising to **68.1%** at rank 10). In the 70.6% of queries where the top-1 chunk lacks the explicit solution, the RAG generator is compelled to ground its answer in noisy context, slightly lowering token-level F1 compared to standalone generation. This highlights the retrieval module as the primary system bottleneck and motivates future work on Hybrid Search (Dense + BM25) and Cross-Encoder Reranking.
 
----
 
-## 👥 Team Contributions
-
-| Student ID | Student Name | Assigned Modules & Responsibilities | Contribution |
-|:---|:---|:---|:---:|
-| **23127366** | **Võ Lê Ngọc Hiếu** | Section 1 (Introduction & Objectives), Section 4.1 (System Architecture), Section 5.1 (Hardware Environment), All Section 7 (Full-stack Web Application with React & FastAPI). | **100%** |
-| **23127386** | **Nguyễn Duy Khánh** | Section 2.1 & 2.3 (RAG & Vector Search Theory), Section 3.3.2 (Technote Preprocessing & Chunking), Section 4.2, 4.3, 4.5 (Document Indexing & Retrieval Module), Section 5.3, 6.2, 6.3.2 (Retrieval Metrics & Retrieval Error Analysis). | **100%** |
-| **23127425** | **Tăng Nhật Minh** | Section 2.2 (QLoRA Theory & Mathematical Formulation), Section 3.1, 3.2, 3.3.1, 3.4 (Dataset EDA, QA Preprocessing, Split Validation), Section 4.4, 5.2 (Generator Architecture & Training Setup), Section 6.1, 6.3.1 (End-to-End Ablation Benchmark & Generator Error Analysis). | **100%** |
 
 ---
 
